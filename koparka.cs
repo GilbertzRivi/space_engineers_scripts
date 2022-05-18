@@ -1,5 +1,6 @@
 
 float max_pos = 0;
+float down_pos = 0;
 
 public void Main(string argument){
     
@@ -29,6 +30,7 @@ public void Rotate(){
     IMyMotorAdvancedStator rotor_main = GridTerminalSystem.GetBlockWithName("Advanced Rotor/Mine 3/") as IMyMotorAdvancedStator;
     IMyShipDrill drill_main = GridTerminalSystem.GetBlockWithName("Drill/Mine 3/") as IMyShipDrill;
     IMyPistonBase piston_hor = GridTerminalSystem.GetBlockWithName("Piston/Mine 3/Hor 1/") as IMyPistonBase;
+    IMyPistonBase piston_ver = GridTerminalSystem.GetBlockWithName("Piston/Mine 3/Ver Main/") as IMyPistonBase;
     IMyTextPanel LCD = (IMyTextPanel)GridTerminalSystem.GetBlockWithName("LCD 1"); 
     IMySoundBlock speaker = GridTerminalSystem.GetBlockWithName("speaker") as IMySoundBlock;
         
@@ -42,12 +44,21 @@ public void Rotate(){
 
     if (max_pos > 10){
         timer_koparka.StopCountdown();
-        piston_hor.Velocity = (float)-0.5;
-        rotor_main.TargetVelocityRPM = (float)0;
-        drill_main.Enabled = (bool)false;
-        LCD.WriteText("Finished mining one layer");
-        speaker.Play();
+        piston_hor.Velocity = (float)-1;
         max_pos = (float)0;
+        piston_hor.MaxLimit = max_pos;
+        piston_ver.MaxLimit = down_pos;
+        down_pos += (float)1.4;
+        piston_hor.Velocity = (float)0.5;
+    }
+
+    if (down_pos > 10){
+        drill_main.Enabled = (bool)false;
+        piston_hor.Velocity = (float)-1;
+        piston_ver.Velocity = (float)-1;
+        down_pos = (float)0;
+        max_pos = (float)0;
+        speaker.Play();
     }
 
 }
