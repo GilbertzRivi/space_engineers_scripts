@@ -17,8 +17,9 @@ public void Main(string argument){
         Rotate();
     }
     else if (argument == "STOP MAIN"){
-        IMyPistonBase piston_hor = GridTerminalSystem.GetBlockWithName("Piston/Mine 3/Hor 1/") as IMyPistonBase;
-        piston_hor.Velocity = (float)0;
+        IMyPistonBase piston_main = GridTerminalSystem.GetBlockWithName("Piston/Mine 3/Ver Main/") as IMyPistonBase;
+        piston_main.Velocity = (float)0;
+        Echo("stopped");
     }
 
 }
@@ -32,7 +33,7 @@ public void Rotate(){
     IMySoundBlock speaker = GridTerminalSystem.GetBlockWithName("speaker") as IMySoundBlock;
         
     piston_hor.MaxLimit = max_pos;
-    max_pos += (float)2;
+    max_pos += (float)1.4;
     piston_hor.Velocity = (float)0.5;
     drill_main.Enabled = (bool)true;
     rotor_main.TargetVelocityRPM = (float)1;
