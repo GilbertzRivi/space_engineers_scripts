@@ -43,7 +43,6 @@ public void Rotate(){
     LCD.WriteText("Max pos: " + max_pos.ToString() + "\nVelocity: " + piston_hor.Velocity.ToString() + "\nMax Limit: " + piston_hor.MaxLimit.ToString() + "\nCurrent Pos: " + piston_hor.CurrentPosition.ToString());
 
     if (max_pos > 10){
-        timer_koparka.StopCountdown();
         piston_hor.Velocity = (float)-1;
         max_pos = (float)0;
         piston_hor.MaxLimit = max_pos;
