@@ -59,6 +59,7 @@ public void Rotate(){
         max_pos = (float)0;
         speaker.Play();
         timer_koparka.StopCountdown();
+        rotor_main.TargetVelocityRPM = (float)0;
     }
 
 }
