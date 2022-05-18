@@ -42,6 +42,7 @@ public void Rotate(){
         drill_main.Enabled = (bool)false;
         LCD.WriteText("Finished mining one layer");
         speaker.Play();
+        max_pos = (float)0;
     }
 
 }
