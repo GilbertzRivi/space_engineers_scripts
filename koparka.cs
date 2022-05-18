@@ -59,6 +59,7 @@ public void Rotate(){
         down_pos = (float)0;
         max_pos = (float)0;
         speaker.Play();
+        timer_koparka.StopCountdown();
     }
 
 }
