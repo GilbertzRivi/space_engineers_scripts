@@ -3,6 +3,9 @@ float max_pos = 0;
 float down_pos = 0;
 int step = 0;
 int steps = 0;
+int steps_to_go = 0;
+float maxVolume = 0;
+float usedVolume = 0;
 
 public void Main(string argument){
     
@@ -34,10 +37,11 @@ public void Main(string argument){
 
 }
 
-public void Stop(){
+public void Stop(bool write = true){
     IMyTimerBlock timer_koparka = GridTerminalSystem.GetBlockWithName("Timer Koparka") as IMyTimerBlock;
     IMyMotorAdvancedStator rotor_main = GridTerminalSystem.GetBlockWithName("Advanced Rotor/Mine 3/") as IMyMotorAdvancedStator;
-    IMyShipDrill drill_main = GridTerminalSystem.GetBlockWithName("Drill/Mine 3/") as IMyShipDrill;
+    IMyShipDrill drill_main = GridTerminalSystem.GetBlockWithName("Drill/Mine 3/1") as IMyShipDrill;
+    IMyShipDrill drill_support = GridTerminalSystem.GetBlockWithName("Drill/Mine 3/2") as IMyShipDrill;
     IMyPistonBase piston_hor = GridTerminalSystem.GetBlockWithName("Piston/Mine 3/Hor 1/") as IMyPistonBase;
     IMyTextPanel LCD = (IMyTextPanel)GridTerminalSystem.GetBlockWithName("LCD 1"); 
     IMySoundBlock speaker = GridTerminalSystem.GetBlockWithName("speaker") as IMySoundBlock;
@@ -54,6 +58,7 @@ public void Stop(){
         }
     }
     drill_main.Enabled = (bool)false;
+    drill_support.Enabled = (bool)false;
     piston_hor.Velocity = (float)-1;
     foreach(var piston in arm_pistons_on){
         piston.Velocity = (float)-1;
@@ -64,8 +69,10 @@ public void Stop(){
     timer_koparka.StopCountdown();
     rotor_main.TargetVelocityRPM = (float)0;
     step = 0;
-    LCD.WriteText("Stopped");
-
+    
+    if (write){
+        LCD.WriteText("Stopped");
+    }
 }
 
 public void Solar(){
@@ -97,7 +104,8 @@ public bool Rotate(bool skip = false){
     Solar();
     IMyTimerBlock timer_koparka = GridTerminalSystem.GetBlockWithName("Timer Koparka") as IMyTimerBlock;
     IMyMotorAdvancedStator rotor_main = GridTerminalSystem.GetBlockWithName("Advanced Rotor/Mine 3/") as IMyMotorAdvancedStator;
-    IMyShipDrill drill_main = GridTerminalSystem.GetBlockWithName("Drill/Mine 3/") as IMyShipDrill;
+    IMyShipDrill drill_main = GridTerminalSystem.GetBlockWithName("Drill/Mine 3/1") as IMyShipDrill;
+    IMyShipDrill drill_support = GridTerminalSystem.GetBlockWithName("Drill/Mine 3/2") as IMyShipDrill;
     IMyPistonBase piston_hor = GridTerminalSystem.GetBlockWithName("Piston/Mine 3/Hor 1/") as IMyPistonBase;
     IMyTextPanel LCD = (IMyTextPanel)GridTerminalSystem.GetBlockWithName("LCD 1"); 
     IMySoundBlock speaker = GridTerminalSystem.GetBlockWithName("speaker") as IMySoundBlock;
@@ -108,21 +116,46 @@ public bool Rotate(bool skip = false){
 
     List<IMyPistonBase> arm_pistons_on = new List<IMyPistonBase>();
 
+    IMyBlockGroup storage_group = GridTerminalSystem.GetBlockGroupWithName("storage");
+    List<IMyCargoContainer> storages = new List<IMyCargoContainer>();
+    storage_group.GetBlocksOfType(storages); 
+    
+    usedVolume = 0;
+    maxVolume = 0;
+
+    foreach(var storage in storages){
+        usedVolume += (float)storage.GetInventory(0).CurrentVolume;   
+        maxVolume += (float)storage.GetInventory(0).MaxVolume;
+    }
+
     foreach(var piston in arm_pistons){
         if(piston.CustomName == "Piston/Mine 3/Ver On/"){
             arm_pistons_on.Add(piston);
         }
     }
-
-    int steps_to_go = (int)(10/1.5) * (int)(10/(1.5/arm_pistons_on.Count));
+    
+    steps_to_go = 7 * (int)Math.Ceiling(10/(1.5/arm_pistons_on.Count));
     step += 1;
     int eta_h = (steps_to_go - step) / 60;
     int eta_m = (steps_to_go - step) % 60;
+
+    if (usedVolume >= maxVolume){
+        LCD.WriteText("Stopped on step: " + step.ToString() + "/" + steps_to_go.ToString() + "\nBecause storage is full");
+        Stop(false);
+        return true;
+    }
+
+    if (drill_main.GetInventory(0).CurrentVolume >= drill_main.GetInventory(0).MaxVolume){
+        LCD.WriteText("Stopped on step: " + step.ToString() + "/" + steps_to_go.ToString() + "\nBecause drill is full");
+        Stop(false);
+        return true;
+    }
 
     piston_hor.MaxLimit = max_pos;
     max_pos += (float)1.5;
     piston_hor.Velocity = (float)0.5;
     drill_main.Enabled = (bool)true;
+    drill_support.Enabled = true;
     rotor_main.TargetVelocityRPM = (float)1;
 
     if(!skip){
@@ -144,6 +177,7 @@ public bool Rotate(bool skip = false){
     text += "\n    Arm Length: " + (down_pos*arm_pistons_on.Count).ToString();
     text += "\nStep: " + step.ToString() + "/" + steps_to_go.ToString();
     text += "\nETA: " + eta_h.ToString() + ":" + eta_m.ToString();
+    text += "\nStorage: " + Math.Round(usedVolume).ToString() + "/" + Math.Round(maxVolume).ToString() + "L";
     LCD.WriteText(text);
 
     if (max_pos > 10){
@@ -160,6 +194,7 @@ public bool Rotate(bool skip = false){
 
     if (down_pos > 10){
         drill_main.Enabled = (bool)false;
+        drill_support.Enabled = (bool)false;
         piston_hor.Velocity = (float)-1;
         foreach(var piston in arm_pistons_on){
             piston.Velocity = (float)-1;
