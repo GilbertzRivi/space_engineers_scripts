@@ -10,7 +10,7 @@ public void Main(string argument, UpdateType updateType){
     LCD.ContentType = ContentType.TEXT_AND_IMAGE;
     LCD.FontSize = (float)0.8;
     LCD.Alignment = VRage.Game.GUI.TextPanel.TextAlignment.CENTER;
-    LCD.TextPadding = (float)40;
+    LCD.TextPadding = (float)32;
     
     float usedVolume = 0;
     float maxVolume = 0;
@@ -23,7 +23,9 @@ public void Main(string argument, UpdateType updateType){
     
     int procenty = (int)Math.Round(Math.Round(usedVolume)/Math.Round(maxVolume)*40);
     int procenty_real = (int)Math.Round(Math.Round(usedVolume)/Math.Round(maxVolume)*100);
-    string text =  new String('#', procenty);
+    string text = "Sprawdzanie kontenerów w grupie 'cargo'\nIlość kontenerów: " + cargo.Count.ToString();
+    text += "\nPoziom zapełnienia magazynu:\n";
+    text +=  new String('#', procenty);
     text += new String('=', (40 - procenty));
     text += "\n" + procenty_real.ToString() + "%";
 
