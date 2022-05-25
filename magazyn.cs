@@ -18,7 +18,7 @@ public string text_format(string s){
         formated += s[i];
     }
     formated = string_reverse(formated);
-    return formated;
+    return formated.Remove(formated.Length -1);
 }
 
 public void Main(string argument, UpdateType updateType){
