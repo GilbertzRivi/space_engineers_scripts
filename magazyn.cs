@@ -10,7 +10,7 @@ public void Main(string argument, UpdateType updateType){
     LCD.ContentType = ContentType.TEXT_AND_IMAGE;
     LCD.FontSize = (float)0.8;
     LCD.Alignment = VRage.Game.GUI.TextPanel.TextAlignment.CENTER;
-    LCD.TextPadding = (float)32;
+    LCD.TextPadding = (float)30;
     
     float usedVolume = 0;
     float maxVolume = 0;
@@ -28,6 +28,7 @@ public void Main(string argument, UpdateType updateType){
     text +=  new String('#', procenty);
     text += new String('=', (40 - procenty));
     text += "\n" + procenty_real.ToString() + "%";
+    text += "\n" + Math.Round((usedVolume)*1000).ToString() + "/" + Math.Round((maxVolume)*1000).ToString() + " L";
 
     LCD.WriteText(text);
 
