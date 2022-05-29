@@ -11,7 +11,7 @@ List<IMyCargoContainer> cargo_ore = new List<IMyCargoContainer>();
 List<IMyCargoContainer> cargo_ice = new List<IMyCargoContainer>();
 
 public Program(){
-    Runtime.UpdateFrequency = UpdateFrequency.Update100;
+    Runtime.UpdateFrequency = UpdateFrequency.Update10;
 }
 
 public string string_reverse(string s){
@@ -104,7 +104,7 @@ public void Main(string argument, UpdateType updateType){
     GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(lcd_h2, p => p.CustomName == "LCD HYDROGEN");
     GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(lcd_o2, p => p.CustomName == "LCD OXYGEN");   
 
-    IMyTextSurface programmable_block_text = Me.GetSurface(0);
+    IMyTextSurface lcd_main = GridTerminalSystem.GetBlockWithName("LCD STORAGE") as IMyTextSurface;
 
     string text = "";
     
@@ -170,6 +170,6 @@ public void Main(string argument, UpdateType updateType){
     programmable_text += new String('#', ((int) Math.Round(volume_o2.Item1/volume_o2.Item2*30)));
     programmable_text += new String('=', (30 - (int) Math.Round(volume_o2.Item1/volume_o2.Item2*100))) + "\n";
 
-    programmable_block_text.WriteText(programmable_text);
+    lcd_main.WriteText(programmable_text);
 
 }
