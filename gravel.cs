@@ -16,7 +16,7 @@ public void Main(string argument, UpdateType updateSource){
         var cargo_b = cargo_main[i];
         gravel_amount += cargo_b.GetInventory().GetItemAmount(MyItemType.MakeIngot("Stone")).ToIntSafe();
     }
-    Echo(gravel_amount.ToString());
+
     if(gravel_amount > limit){
         sorter_gravel.Enabled = true;
     }
