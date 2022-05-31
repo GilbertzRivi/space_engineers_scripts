@@ -39,8 +39,8 @@ public string text_compose(float used_volume, float max_volume, List<IMyCargoCon
     int percent = (int)Math.Round(Math.Round(used_volume)/Math.Round(max_volume)*100);
     string text = "Ilość kontenerów: " + containers.Count.ToString();
     text += "\nPoziom zapełnienia magazynu " + type + ":\n";
-    text +=  new String('l', loading_bar);
-    text += new String('.', (40 - loading_bar));
+    text += "[" + new String('|', loading_bar);
+    text += new String(Convert.ToChar("'"), (loading_wide - loading_bar)) + "]";
     text += "\n" + percent.ToString() + "%";
 
     string used_volume_txt = text_format(Math.Round(used_volume*1000).ToString());
@@ -51,13 +51,12 @@ public string text_compose(float used_volume, float max_volume, List<IMyCargoCon
 }
 
 public string text_compose_tanks(float used_volume, float max_volume, List<IMyGasTank> tanks, string type, int loading_wide){
-
     int loading_bar = (int)Math.Round(Math.Round(used_volume)/Math.Round(max_volume)*loading_wide);
     int percent = (int)Math.Round(Math.Round(used_volume)/Math.Round(max_volume)*100);
     string text = "Ilość kontenerów: " + tanks.Count.ToString();
     text += "\nPoziom zapełnienia zbiorników " + type + ":\n";
-    text +=  new String('l', loading_bar);
-    text += new String('.', (40 - loading_bar));
+    text += "[" + new String('|', loading_bar);
+    text += new String(Convert.ToChar("'"), (loading_wide - loading_bar)) + "]";
     text += "\n" + percent.ToString() + "%";
 
     string used_volume_txt = text_format(Math.Round(used_volume).ToString());
@@ -86,7 +85,7 @@ public MyTuple<float, float> tanks_volume(List<IMyGasTank> tanks){
     for(int i = 0; i < tanks.Count(); i++){
         var tank = tanks[i];
         maxVolume += (float)tank.Capacity;
-        usedVolume += (float)tank.FilledRatio * maxVolume;
+        usedVolume += (float)tank.FilledRatio * (float)tank.Capacity;
     }
     return MyTuple.Create(usedVolume, maxVolume);
 }
@@ -109,31 +108,31 @@ public void Main(string argument, UpdateType updateType){
     string text = "";
     
     var volume_main = cargo_volume(cargo_main);
-    text = text_compose(volume_main.Item1, volume_main.Item2, cargo_main, "[MAIN]", 40);
+    text = text_compose(volume_main.Item1, volume_main.Item2, cargo_main, "[MAIN]", 80);
     foreach(var lcd in lcd_cargo_main){
         lcd.WriteText(text);
     }
 
     var volume_ore = cargo_volume(cargo_ore);
-    text = text_compose(volume_ore.Item1, volume_ore.Item2, cargo_ore, "[ORE]", 40);
+    text = text_compose(volume_ore.Item1, volume_ore.Item2, cargo_ore, "[ORE]", 80);
     foreach(var lcd in lcd_cargo_ore){
         lcd.WriteText(text);
     }
 
     var volume_ice = cargo_volume(cargo_ice);
-    text = text_compose(volume_ice.Item1, volume_ice.Item2, cargo_ice, "[ICE]", 40);
+    text = text_compose(volume_ice.Item1, volume_ice.Item2, cargo_ice, "[ICE]", 80);
     foreach(var lcd in lcd_ice){
         lcd.WriteText(text);
     }
 
     var volume_h2 = tanks_volume(tanks_h2);
-    text = text_compose_tanks(volume_h2.Item1, volume_h2.Item2, tanks_h2, "[HYDROGEN]", 40);
+    text = text_compose_tanks(volume_h2.Item1, volume_h2.Item2, tanks_h2, "[HYDROGEN]", 80);
     foreach(var lcd in lcd_h2){
         lcd.WriteText(text);
     }
 
     var volume_o2 = tanks_volume(tanks_o2);
-    text = text_compose_tanks(volume_o2.Item1, volume_o2.Item2, tanks_o2, "[OXYGEN]", 40);
+    text = text_compose_tanks(volume_o2.Item1, volume_o2.Item2, tanks_o2, "[OXYGEN]", 80);
     foreach(var lcd in lcd_o2){
         lcd.WriteText(text);
     }
@@ -143,32 +142,32 @@ public void Main(string argument, UpdateType updateType){
     programmable_text += "Cargo Main: " + text_format(Math.Round(volume_main.Item1*1000).ToString());
     programmable_text += "/" + text_format(Math.Round(volume_main.Item2*1000).ToString()) + "L";
     programmable_text += " " + (int) Math.Round(volume_main.Item1/volume_main.Item2*100) + "%\n";
-    programmable_text += new String('#', ((int) Math.Round(volume_main.Item1/volume_main.Item2*30)));
-    programmable_text += new String('=', (30 - (int) Math.Round(volume_main.Item1/volume_main.Item2*100))) + "\n";
+    programmable_text += new String('#', ((int)(volume_main.Item1/volume_main.Item2*30)));
+    programmable_text += new String('=', (30 - (int)(volume_main.Item1/volume_main.Item2*30))) + "\n";
 
     programmable_text += "Cargo Ore: " + text_format(Math.Round(volume_ore.Item1*1000).ToString());
     programmable_text += "/" + text_format(Math.Round(volume_ore.Item2*1000).ToString()) + "L";
     programmable_text += " " + (int) Math.Round(volume_ore.Item1/volume_ore.Item2*100) + "%\n";
-    programmable_text += new String('#', ((int) Math.Round(volume_ore.Item1/volume_ore.Item2*30)));
-    programmable_text += new String('=', (30 - (int) Math.Round(volume_ore.Item1/volume_ore.Item2*100))) + "\n";
+    programmable_text += new String('#', ((int)(volume_ore.Item1/volume_ore.Item2*30)));
+    programmable_text += new String('=', (30 - (int)(volume_ore.Item1/volume_ore.Item2*30))) + "\n";
 
     programmable_text += "Cargo Ice: " + text_format(Math.Round(volume_ice.Item1*1000).ToString());
     programmable_text += "/" + text_format(Math.Round(volume_ice.Item2*1000).ToString()) + "L";
     programmable_text += " " + (int) Math.Round(volume_ice.Item1/volume_ice.Item2*100) + "%\n";
-    programmable_text += new String('#', ((int) Math.Round(volume_ice.Item1/volume_ice.Item2*30)));
-    programmable_text += new String('=', (30 - (int) Math.Round(volume_ice.Item1/volume_ice.Item2*100))) + "\n";
+    programmable_text += new String('#', ((int)(volume_ice.Item1/volume_ice.Item2*30)));
+    programmable_text += new String('=', (30 - (int)(volume_ice.Item1/volume_ice.Item2*30))) + "\n";
 
     programmable_text += "Cargo H2: " + text_format(Math.Round(volume_h2.Item1).ToString());
     programmable_text += "/" + text_format(Math.Round(volume_h2.Item2).ToString()) + "L";
     programmable_text += " " + (int) Math.Round(volume_h2.Item1/volume_h2.Item2*100) + "%\n";
-    programmable_text += new String('#', ((int) Math.Round(volume_h2.Item1/volume_h2.Item2*30)));
-    programmable_text += new String('=', (30 - (int) Math.Round(volume_h2.Item1/volume_h2.Item2*100))) + "\n";
+    programmable_text += new String('#', ((int)(volume_h2.Item1/volume_h2.Item2*30)));
+    programmable_text += new String('=', (30 - (int)(volume_h2.Item1/volume_h2.Item2*30))) + "\n";
 
     programmable_text += "Cargo O2: " + text_format(Math.Round(volume_o2.Item1).ToString());
     programmable_text += "/" + text_format(Math.Round(volume_o2.Item2).ToString()) + "L";
     programmable_text += " " + (int) Math.Round(volume_o2.Item1/volume_o2.Item2*100) + "%\n";
-    programmable_text += new String('#', ((int) Math.Round(volume_o2.Item1/volume_o2.Item2*30)));
-    programmable_text += new String('=', (30 - (int) Math.Round(volume_o2.Item1/volume_o2.Item2*100))) + "\n";
+    programmable_text += new String('#', ((int)(volume_o2.Item1/volume_o2.Item2*30)));
+    programmable_text += new String('=', (30 - (int)(volume_o2.Item1/volume_o2.Item2*30))) + "\n";
 
     lcd_main.WriteText(programmable_text);
 
