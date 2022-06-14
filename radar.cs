@@ -29,12 +29,12 @@ bool LinePointIntersection(double PointX, double PointY, double AngleDeg)
     {
         if(AngleRad <= Math.PI)
         {
-            if (Math.Abs(AngleRad - Math.Atan2(PointY, PointX)) < 0.05) { return true; }
+            if (Math.Abs(AngleRad - Math.Atan2(PointY, PointX)) < 0.015) { return true; }
             else { return false; }
         }
         else
         {
-            if (Math.Abs(AngleRad - ((Math.PI * 2) + Math.Atan2(PointY, PointX))) < 0.05) { return true; }
+            if (Math.Abs(AngleRad - ((Math.PI * 2) + Math.Atan2(PointY, PointX))) < 0.015) { return true; }
             else { return false; }
         }
     }
@@ -91,7 +91,7 @@ public void Main(string argument, UpdateType updateSource)
     string output = "";
     for (int x = 0; x < DisplayTable.GetLength(0); x++)
     {
-        for (int y = 0; y <DisplayTable.GetLength(1); y++)
+        for (int y = 0; y < DisplayTable.GetLength(1); y++)
         {
             output += DisplayTable[x, y];
         }
