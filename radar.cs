@@ -1,4 +1,5 @@
-char[,] DisplayTable = new char[61, 61];
+int resolution = 70;
+char[,] DisplayTable = new char[70 + 1, 70 + 1];
 double DistanceCalculation(Vector3D CamPos, Vector3D HitPos)
 {
     double DistanceX = (double)(CamPos.X - HitPos.X);
@@ -54,7 +55,7 @@ public void Main(string argument, UpdateType updateSource)
     Rotor.TargetVelocityRPM = (float)-2;
     Cam.EnableRaycast = true;
 
-    MyDetectedEntityInfo RC = Cam.Raycast((double)100);
+    MyDetectedEntityInfo RC = Cam.Raycast((double)250);
 
     Vector3D CamPos = Cam.GetPosition();
 
@@ -67,24 +68,24 @@ public void Main(string argument, UpdateType updateSource)
         if (Distance <= 250)
         {
             double Angle = Rotor.Angle;
-            int DisplayX = (int)Math.Round(Distance * Math.Cos(Angle) / 250 * 60) + 30;
-            int DisplayY = (int)Math.Round(Distance * Math.Sin(Angle) / 250 * 60) + 30;
+            int DisplayX = (int)Math.Round(Distance * Math.Cos(Angle) / 250 * resolution) + resolution/2;
+            int DisplayY = (int)Math.Round(Distance * Math.Sin(Angle) / 250 * resolution) + resolution/2;
             LCD.WriteText(DisplayX.ToString() + " " + DisplayY.ToString());
-            if (DisplayX < 60 & DisplayX > 0 & DisplayY < 60 & DisplayY > 0)
+            if (DisplayX < resolution & DisplayX > 0 & DisplayY < resolution & DisplayY > 0)
             {
                 DisplayTable[DisplayX, DisplayY] = '#';
             }
         }
     }
 
-    for (int y = 30; y > -30; y--)
+    for (int y = resolution/2; y > -resolution/2; y--)
     {
-        for (int x = -30; x < 30; x++)
+        for (int x = -resolution/2; x < resolution/2; x++)
         {
-            if (DisplayTable[x + 30, y + 30] != '#')
+            if (DisplayTable[x + resolution/2, y + resolution/2] != '#')
             {
-                if (LinePointIntersection(x, y, Rotor.Angle * (180 / Math.PI))) { DisplayTable[x + 30, y + 30] = '0'; }
-                else { DisplayTable[x + 30, y + 30] = '-'; }
+                if (LinePointIntersection(x, y, Rotor.Angle * (180 / Math.PI))) { DisplayTable[x + resolution/2, y + resolution/2] = '0'; }
+                else { DisplayTable[x + resolution/2, y + resolution/2] = '-'; }
             }
         }
     }
