@@ -1,5 +1,7 @@
 int resolution = 70;
 char[,] DisplayTable = new char[70 + 1, 70 + 1];
+double distance = 500;
+
 double DistanceCalculation(Vector3D CamPos, Vector3D HitPos)
 {
     double DistanceX = (double)(CamPos.X - HitPos.X);
@@ -55,7 +57,7 @@ public void Main(string argument, UpdateType updateSource)
     Rotor.TargetVelocityRPM = (float)-2;
     Cam.EnableRaycast = true;
 
-    MyDetectedEntityInfo RC = Cam.Raycast((double)250);
+    MyDetectedEntityInfo RC = Cam.Raycast(distance);
 
     Vector3D CamPos = Cam.GetPosition();
 
@@ -65,11 +67,11 @@ public void Main(string argument, UpdateType updateSource)
         Vector3D HitPos = RC.HitPosition.Value;
         double Distance = DistanceCalculation(CamPos, HitPos);
 
-        if (Distance <= 250)
+        if (Distance <= distance)
         {
             double Angle = Rotor.Angle;
-            int DisplayX = (int)Math.Round(Distance * Math.Cos(Angle) / 250 * resolution) + resolution/2;
-            int DisplayY = (int)Math.Round(Distance * Math.Sin(Angle) / 250 * resolution) + resolution/2;
+            int DisplayX = (int)Math.Round(Distance * Math.Cos(Angle) / distance * resolution) + resolution/2;
+            int DisplayY = (int)Math.Round(Distance * Math.Sin(Angle) / distance * resolution) + resolution/2;
             LCD.WriteText(DisplayX.ToString() + " " + DisplayY.ToString());
             if (DisplayX < resolution & DisplayX > 0 & DisplayY < resolution & DisplayY > 0)
             {
