@@ -1,6 +1,12 @@
 int distance = 450;
 int objsize = 7;
+int rotationdeg = 45;
+float maxbsheight = 7.5f;
 Color radarcolor = Color.Green;
+
+List<IMyCameraBlock> CamsR0 = new List<IMyCameraBlock>();
+List<IMyCameraBlock> CamsR1 = new List<IMyCameraBlock>();
+List<List<IMyCameraBlock>> CamRows = new List<List<IMyCameraBlock>>();
 
 List<DetectedObject> DetectedObjects = new List<DetectedObject>();
 public class DetectedObject
@@ -61,41 +67,54 @@ public Program()
 }
 public void Main(string argument, UpdateType updateSource)
 {
-    IMyTextPanel test = GridTerminalSystem.GetBlockWithName("LCD test") as IMyTextPanel;
-    IMyMotorStator Rotor = GridTerminalSystem.GetBlockWithName("Rotor Radar") as IMyMotorStator;
-    IMyCameraBlock Camc0r0 = GridTerminalSystem.GetBlockWithName("Camera c0 r0") as IMyCameraBlock;
-    IMyCameraBlock Camc1r0 = GridTerminalSystem.GetBlockWithName("Camera c1 r0") as IMyCameraBlock;
-    IMyCameraBlock Camc2r0 = GridTerminalSystem.GetBlockWithName("Camera c2 r0") as IMyCameraBlock;
-    IMyCameraBlock Camc3r0 = GridTerminalSystem.GetBlockWithName("Camera c3 r0") as IMyCameraBlock;
-    List<IMyCameraBlock> Cams = new List<IMyCameraBlock>() { Camc0r0, Camc1r0, Camc2r0, Camc3r0 };
+    IMyTextPanel LCD = GridTerminalSystem.GetBlockWithName("LCD Radar") as IMyTextPanel;
+    IMyMotorStator Rotor = GridTerminalSystem.GetBlockWithName("Rotor Radar Main") as IMyMotorStator;
+    CamsR0.Clear();
+    GridTerminalSystem.GetBlocksOfType<IMyCameraBlock>(CamsR0, c => c.CustomName.Contains("Camera R0"));
+    CamsR0.Sort((x, y) => x.CustomName[x.CustomName.Length - 1].CompareTo(y.CustomName[x.CustomName.Length - 1]));
+    CamsR0.Reverse();
 
-    Vector2 Resolution = test.SurfaceSize;
+    CamsR1.Clear();
+    GridTerminalSystem.GetBlocksOfType<IMyCameraBlock>(CamsR1, c => c.CustomName.Contains("Camera R1"));
+    CamsR1.Sort((x, y) => x.CustomName[x.CustomName.Length - 1].CompareTo(y.CustomName[x.CustomName.Length - 1]));
+    CamsR1.Reverse();
+
+    CamRows.Clear();
+    CamRows.Add(CamsR0);
+    CamRows.Add(CamsR1);
+
+    Vector2 Resolution = LCD.SurfaceSize;
     float Angle = Rotor.Angle;
-    int ObjLifetime = (int)(Rotor.TargetVelocityRPM / 4 * 360 - 10);
+    int ObjLifetime = (int)(Rotor.TargetVelocityRPM / CamsR0.Count * 360 - 10);
 
-    for (int i = 0; i < Cams.Count; i++)
-    {
-        var cam = Cams[i];
-        cam.EnableRaycast = true;
-        MyDetectedEntityInfo RC = cam.Raycast(distance);
-        Vector3D CamPos = cam.GetPosition();
-
-        if (RC.HitPosition.HasValue)
+    for (int row = 0; row < CamRows.Count; row++) {
+        for (int i = 0; i < CamsR0.Count; i++)
         {
-            Vector3D HitPos = RC.HitPosition.Value;
-            double Distance = DistanceCalculation(CamPos, HitPos);
-            int PosX = (int)((Distance * Math.Cos(Angle + Math.PI / 2 * i) / distance * Resolution.X / 2) + Resolution.X / 2);
-            int PosY = (int)((Distance * Math.Sin(Angle + Math.PI / 2 * i) / distance * Resolution.Y / 2) + Resolution.Y / 2);
-            int PosDistance = (int)Math.Sqrt(Math.Pow(PosX - 256, 2) + Math.Pow(PosY - 256, 2));
-            if (PosDistance <= 224)
+            var cam = CamsR0[i];
+            cam.EnableRaycast = true;
+            float pitch = (maxbsheight / distance) * (float)(180 / Math.PI) * row;
+            Echo(pitch.ToString());
+            MyDetectedEntityInfo RC = cam.Raycast(distance, pitch, rotationdeg);
+            Vector3D CamPos = cam.GetPosition();
+
+            if (RC.HitPosition.HasValue)
             {
-                DetectedObject obj = new DetectedObject(new Vector2(PosX, PosY), ObjLifetime);
-                DetectedObjects.Add(obj);
+                Vector3D HitPos = RC.HitPosition.Value;
+                double Distance = DistanceCalculation(CamPos, HitPos);
+                int PosX = (int)((Distance * Math.Cos(Angle + Math.PI / (0.5 * CamsR0.Count) * i) / distance * Resolution.X / 2) + Resolution.X / 2);
+                int PosY = (int)((Distance * Math.Sin(Angle + Math.PI / (0.5 * CamsR0.Count) * i) / distance * Resolution.Y / 2) + Resolution.Y / 2);
+                int PosDistance = (int)Math.Sqrt(Math.Pow(PosX - 256, 2) + Math.Pow(PosY - 256, 2));
+                if (PosDistance <= 224)
+                {
+                    DetectedObject obj = new DetectedObject(new Vector2(PosX, PosY), ObjLifetime);
+                    DetectedObjects.Add(obj);
+                }
             }
         }
     }
 
-    using (var Frame = test.DrawFrame())
+
+    using (var Frame = LCD.DrawFrame())
     {
         DrawShape(Frame, 224, 12, new Vector2(256), 1, radarcolor);
         DrawShape(Frame, 168, 12, new Vector2(256), 1, radarcolor);
@@ -104,10 +123,11 @@ public void Main(string argument, UpdateType updateSource)
         DrawLine(Frame, new Vector2(256, 32), new Vector2(256, 480), 1, radarcolor);
         DrawLine(Frame, new Vector2(32, 256), new Vector2(480, 256), 1, radarcolor);
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < CamsR0.Count; i++)
         {
             Vector2 LineStart = new Vector2(256);
-            Vector2 LineEnd = new Vector2((int)(224 * Math.Sin(-(Angle - Math.PI / 2 * i)) + 256), (int)(224 * Math.Cos(-(Angle - Math.PI / 2 * i))) + 256);
+            Vector2 LineEnd = new Vector2((int)(224 * Math.Sin(-(Angle - Math.PI / (0.5 * CamsR0.Count) * i)) + 256),
+                (int)(224 * Math.Cos(-(Angle - Math.PI / (0.5 * CamsR0.Count) * i))) + 256);
             DrawLine(Frame, LineStart, LineEnd, 1, radarcolor);
         }
 
